@@ -1,0 +1,34 @@
+[
+	{
+		"id": "tools",
+		"caption": "Tools",
+		"children": [
+			{
+				"id": "GoHelper OS ARCH",
+				"caption": "GoHelper OS ARCH",
+				"children": [
+					{ "command": "go_change_os_arch", "caption": "darwin - 386", "args": {"index": 0 } },
+					{ "command": "go_change_os_arch", "caption": "darwin - amd64", "args": {"index": 1 } },
+					{ "caption": "-" },
+					{ "command": "go_change_os_arch", "caption": "linux - 386", "args": {"index": 2 } },
+					{ "command": "go_change_os_arch", "caption": "linux - amd64", "args": {"index": 3 } },
+					{ "command": "go_change_os_arch", "caption": "linux - arm", "args": {"index": 4 } },
+					{ "caption": "-" },
+					{ "command": "go_change_os_arch", "caption": "windows - 386", "args": {"index": 5 } },
+					{ "command": "go_change_os_arch", "caption": "windows - amd64", "args": {"index": 6 } },
+					{ "caption": "-" },
+					{ "command": "go_change_os_arch", "caption": "freebsd - 386", "args": {"index": 7 } },
+					{ "command": "go_change_os_arch", "caption": "freebsd - amd64", "args": {"index": 8 } },
+					{ "caption": "-" },
+					{ "command": "go_change_os_arch", "caption": "netbsd - 386", "args": {"index": 9 } },
+					{ "command": "go_change_os_arch", "caption": "netbsd - amd64", "args": {"index": 10 } },
+					{ "caption": "-" },
+					{ "command": "go_change_os_arch", "caption": "openbsd - 386", "args": {"index": 11 } },
+					{ "command": "go_change_os_arch", "caption": "openbsd - amd64", "args": {"index": 12 } },
+					{ "caption": "-" },
+					{ "command": "go_change_os_arch", "caption": "plan9 - amd64", "args": {"index": 13 } }
+				]
+			}
+		]
+	}
+]
