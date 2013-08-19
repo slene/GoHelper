@@ -30,6 +30,16 @@ def is_go_source_view(view=None, strict=True):
 	fn = view.file_name() or ''
 	return fn.lower().endswith('.go')
 
+def is_go_test_view(view=None, strict=True):
+	if view is None:
+		return False
+
+	if not is_go_source_view(view, strict):
+		return False
+
+	fn = view.file_name() or ''
+	return fn.lower().endswith('_test.go') and fn.lower() != '_test.go'
+
 def active_valid_go_view(win=None, strict=True):
 	if not win:
 		win = sublime.active_window()
@@ -90,18 +100,17 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 	panel_name = 'output.GoInstall-output'
 	reg_lines = re.compile(r'^(?P<file>[^ ]+\.go):(?P<line>\d+):.*', re.I|re.M)
 
-	def is_enabled(self):
-		view = active_valid_go_view(self.window)
-		return view is not None
-
 	def run(self, save = True):
-		from GoSublime.gosubl import gs, mg9
-		from GoSublime.gs9o import active_wd
-
 		view = self.window.active_view()
 
 		if save:
 			view.run_command("save")
+
+		if active_valid_go_view(self.window) is None:
+			return
+
+		from GoSublime.gosubl import gs, mg9
+		from GoSublime.gs9o import active_wd
 
 		senv = get_goenv()
 
@@ -131,13 +140,17 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 		if goos: env['GOOS'] = goos.lower()
 		if goarch: env['GOARCH'] = goarch.lower()
 
+		cmd = 'install'
+		if is_go_test_view(view):
+			cmd = 'test'
+
 		a = {
 			'cid': '9go-%s' % wd,
 			'env': env,
 			'cwd': wd,
 			'cmd': {
 				'name': 'go',
-				'args': ['install'],
+				'args': [cmd],
 			}
 		}
 
