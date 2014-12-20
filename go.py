@@ -94,7 +94,7 @@ class EVT(sublime_plugin.EventListener):
 			return
 		self.off()
 	def on_window_command(self, *args, **kwargs):
-		self.off()
+		pass
 
 class GoInstallCommand(sublime_plugin.WindowCommand):
 	panel_name = 'output.GoInstall-output'
@@ -118,19 +118,20 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 
 		gopath = [os.path.normpath(p) for p in os.environ.get('GOPATH', '').split(os.path.pathsep) if p]
 
-		gpath = senv.get('GOPATH', '')
-		if gpath.find('$GS_GOPATH') != -1:
+		gsPath = senv.get('GOPATH', '')
+		if gsPath.find('$GS_GOPATH') != -1:
 			p = wd + os.path.sep
 			i = p.find(os.path.sep + "src" + os.path.sep)
 			if i != -1:
-				gpath = gpath.replace('$GS_GOPATH', wd[:i])
-				_p = gopath
-				gopath = [os.path.normpath(p) for p in gpath.split(os.path.pathsep)]
-				gopath.extend(_p)
+				gsPath = gsPath.replace('$GS_GOPATH', wd[:i])
+
+		_p = gopath
+		gopath = [os.path.normpath(p) for p in gsPath.split(os.path.pathsep)]
+		gopath.extend(_p)
 
 		GOPATH = []
 		for p in gopath:
-			if p and p not in GOPATH:
+			if p and p != '.' and p not in GOPATH:
 				GOPATH.append(p)
 
 		env = os.environ.copy()
