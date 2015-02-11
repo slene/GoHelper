@@ -1,0 +1,3 @@
+[
+    { "keys": ["ctrl+.", "ctrl+g"], "command": "gohelper_godef" }
+]
