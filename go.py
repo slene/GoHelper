@@ -9,7 +9,6 @@ import sublime_plugin
 
 stash = {}
 
-
 def sel(view, i=0):
 	try:
 		s = view.sel()
@@ -312,3 +311,34 @@ class GohelperGodefCommand(sublime_plugin.WindowCommand):
 		else:
 			print("[Godef]ERROR: godef output bad: " + str(output))
 		print("=================[Godef] End =================")
+
+
+PLATFORMS = {'linux': 'Linux', 'osx': 'OSX'}
+
+def set_keymap():
+	path = os.path.join(sublime.packages_path(), 'User', 'Default (' + PLATFORMS[sublime.platform()] + ').sublime-keymap')
+
+	con = ''
+	if os.path.isfile(path):
+		with open(path, 'r', encoding = 'utf-8') as fh:
+			con = str(fh.read())
+			if con.find('gohelper_godef') != -1:
+				return
+
+	if sublime.platform() == 'osx':
+		keymap = '{ "keys": ["super+.", "super+g"], "command": "gohelper_godef" }'
+	else:
+		keymap = '{ "keys": ["ctrl+.", "ctrl+g"], "command": "gohelper_godef" }'
+
+	start = con.find('[')
+	if start == -1:
+		keymap = '[\n    ' + keymap + '\n]'
+		con = keymap
+	else:
+		keymap = '\n    ' + keymap + ','
+		con = con[:start+1] + keymap + con[start+1:]
+
+	with open(path, 'w', encoding = 'utf-8') as fh:
+		fh.write(con)
+
+set_keymap()
