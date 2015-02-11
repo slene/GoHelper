@@ -50,9 +50,38 @@ def active_valid_go_view(win=None, strict=True):
 	return None
 
 def get_goenv(setting = None):
+	from GoSublime.gs9o import active_wd
+
 	if not setting:
 		setting = get_setting()
-	return setting.get('env', {})
+	senv = setting.get('env', {})
+
+	wd = active_wd()
+
+	gopath = [os.path.normpath(p) for p in os.environ.get('GOPATH', '').split(os.path.pathsep) if p]
+
+	gsPath = senv.get('GOPATH', '')
+	if gsPath.find('$GS_GOPATH') != -1:
+		p = wd + os.path.sep
+		i = p.find(os.path.sep + "src" + os.path.sep)
+		if i != -1:
+			gsPath = gsPath.replace('$GS_GOPATH', wd[:i])
+
+	_p = gopath
+	gopath = [os.path.normpath(p) for p in gsPath.split(os.path.pathsep)]
+	gopath.extend(_p)
+
+	GOPATH = []
+	for p in gopath:
+		if p and p != '.' and p not in GOPATH:
+			GOPATH.append(p)
+
+	env = os.environ.copy()
+	env['GOPATH'] = os.path.pathsep.join(GOPATH)
+	goos = senv.get('GOOS')
+	goarch = senv.get('GOARCH')
+	if goos: env['GOOS'] = goos.lower()
+	if goarch: env['GOARCH'] = goarch.lower()
 
 def get_setting():
 	return sublime.load_settings("GoSublime.sublime-settings")
@@ -110,36 +139,8 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 			return
 
 		from GoSublime.gosubl import gs, mg9
-		from GoSublime.gs9o import active_wd
 
-		senv = get_goenv()
-
-		wd = active_wd()
-
-		gopath = [os.path.normpath(p) for p in os.environ.get('GOPATH', '').split(os.path.pathsep) if p]
-
-		gsPath = senv.get('GOPATH', '')
-		if gsPath.find('$GS_GOPATH') != -1:
-			p = wd + os.path.sep
-			i = p.find(os.path.sep + "src" + os.path.sep)
-			if i != -1:
-				gsPath = gsPath.replace('$GS_GOPATH', wd[:i])
-
-		_p = gopath
-		gopath = [os.path.normpath(p) for p in gsPath.split(os.path.pathsep)]
-		gopath.extend(_p)
-
-		GOPATH = []
-		for p in gopath:
-			if p and p != '.' and p not in GOPATH:
-				GOPATH.append(p)
-
-		env = os.environ.copy()
-		env['GOPATH'] = os.path.pathsep.join(GOPATH)
-		goos = senv.get('GOOS')
-		goarch = senv.get('GOARCH')
-		if goos: env['GOOS'] = goos.lower()
-		if goarch: env['GOARCH'] = goarch.lower()
+		env = get_goenv()
 
 		cmd = 'install'
 		if is_go_test_view(view):
@@ -197,9 +198,9 @@ GO_OS_ARCH = [
 ]
 
 def current_os_arch_index():
-	senv = get_goenv()
-	goos = senv.get("GOOS", '').lower()
-	goarch = senv.get("GOARCH", '').lower()
+	env = get_goenv()
+	goos = env.get("GOOS", '').lower()
+	goarch = env.get("GOARCH", '').lower()
 	for i, d in enumerate(GO_OS_ARCH):
 		o, a = d
 		if goos == o and goarch == a:
