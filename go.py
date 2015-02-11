@@ -1,8 +1,11 @@
+import os
+import re
+import time
+import json
+import subprocess
+
 import sublime
 import sublime_plugin
-import re
-import os
-import json
 
 stash = {}
 
@@ -82,6 +85,8 @@ def get_goenv(setting = None):
 	goarch = senv.get('GOARCH')
 	if goos: env['GOOS'] = goos.lower()
 	if goarch: env['GOARCH'] = goarch.lower()
+
+	return env
 
 def get_setting():
 	return sublime.load_settings("GoSublime.sublime-settings")
@@ -236,3 +241,74 @@ class GoChangeOsArchCommand(sublime_plugin.ApplicationCommand):
 
 	def run(self, index):
 		change_os_arch(index)
+
+class GohelperGodefCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		print("=================[Godef] Start =================")
+
+		setting = get_setting()
+		godef_path = setting.get('godef_path', '')
+		env = get_goenv(setting)
+
+		if not godef_path:
+			paths = env.get('GOPATH', '').split(':')
+			for path in paths:
+				test_path = os.path.join(path, 'bin', 'godef')
+				if not os.path.isfile(test_path):
+					continue
+				print("[Godef]INFO: godef found at" + test_path)
+				godef_path = test_path
+
+			if godef_path:
+				setting.set('godef_path', godef_path)
+				print('godef save')
+				save_settings()
+
+		if not os.path.isfile(godef_path):
+			print('[Godef]ERROR: godef not found')
+			return
+
+		view = self.window.active_view()
+		select = view.sel()[0]
+		select_begin = select.begin()
+		select_before = sublime.Region(0, select_begin)
+		string_before = view.substr(select_before)
+		string_before.encode("utf-8")
+		buffer_before = bytearray(string_before, encoding = "utf8")
+		offset = len(buffer_before)
+		print("[Godef]INFO: selcet_begin: " + str(select_begin) + " offset: " + str(offset))
+
+		filename = view.file_name()
+
+		args = [
+			godef_path,
+			"-f",
+			filename,
+			"-o",
+			str(offset)
+		]
+
+		print("[Godef]INFO: spawning: " + " ".join(args))
+
+		p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+		output, stderr = p.communicate()
+		if stderr:
+			print("[Godef]ERROR: no definition found: " + str(stderr))
+			print("=================[Godef] End =================")
+			return
+
+		location = output.decode("utf-8").rstrip().split(":")
+
+		if len(location) == 3:
+			print("[Godef]INFO: godef output: " + str(output))
+			file = location[0]
+			row = int(location[1])
+			col = int(location[2])
+
+			postion = (file + ":" + str(row) + ":" + str(col))
+			print("[Godef]INFO: opening definition at " + postion)
+			view = self.window.open_file(postion, sublime.ENCODED_POSITION)
+			# view.show_at_center(region)
+		else:
+			print("[Godef]ERROR: godef output bad: " + str(output))
+		print("=================[Godef] End =================")
