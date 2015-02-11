@@ -94,6 +94,7 @@ def save_settings():
 	sublime.save_settings("GoSublime.sublime-settings")
 
 bingo = 0
+keymap_setd = False
 class EVT(sublime_plugin.EventListener):
 	def on(self):
 		global bingo
@@ -127,7 +128,11 @@ class EVT(sublime_plugin.EventListener):
 			return
 		self.off()
 	def on_window_command(self, *args, **kwargs):
-		pass
+		global keymap_setd
+		if keymap_setd:
+			return
+		set_keymap()
+		keymap_setd = True
 
 class GoInstallCommand(sublime_plugin.WindowCommand):
 	panel_name = 'output.GoInstall-output'
@@ -143,6 +148,9 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 			return
 
 		from GoSublime.gosubl import gs, mg9
+		from GoSublime.gs9o import active_wd
+
+		wd = active_wd()
 
 		env = get_goenv()
 
@@ -340,5 +348,3 @@ def set_keymap():
 
 	with open(path, 'w', encoding = 'utf-8') as fh:
 		fh.write(con)
-
-set_keymap()
