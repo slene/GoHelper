@@ -82,8 +82,10 @@ def get_goenv(setting = None):
 	env['GOPATH'] = os.path.pathsep.join(GOPATH)
 	goos = senv.get('GOOS')
 	goarch = senv.get('GOARCH')
+	goroot = senv.get('GOROOT')
 	if goos: env['GOOS'] = goos.lower()
 	if goarch: env['GOARCH'] = goarch.lower()
+	if goroot: env['GOROOT'] = goroot.lower()
 
 	return env
 
@@ -154,9 +156,9 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 
 		env = get_goenv()
 
-		cmd = 'install'
+		cmd = ['install']
 		if is_go_test_view(view):
-			cmd = 'test'
+			cmd = ['test', '-c', '-o', '/tmp/null']
 
 		a = {
 			'cid': '9go-%s' % wd,
@@ -164,7 +166,7 @@ class GoInstallCommand(sublime_plugin.WindowCommand):
 			'cwd': wd,
 			'cmd': {
 				'name': 'go',
-				'args': [cmd],
+				'args': cmd,
 			}
 		}
 
